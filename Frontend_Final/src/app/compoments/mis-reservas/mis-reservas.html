@@ -1,0 +1,114 @@
+<mat-toolbar color="primary" class="toolbar">
+    <span class="titulo">📖 Mis Reservas</span>
+    <span class="spacer"></span>
+    <button mat-button (click)="irAlCatalogo()">
+        <mat-icon>library_books</mat-icon>
+        Volver al Catálogo
+    </button>
+    <button mat-icon-button [matMenuTriggerFor]="menu">
+        <mat-icon>account_circle</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu">
+        <button mat-menu-item (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        <span>Cerrar Sesión</span>
+        </button>
+    </mat-menu>
+    </mat-toolbar>
+
+    <div class="reservas-container">
+    <div *ngIf="loading" class="loading">
+        <mat-spinner></mat-spinner>
+        <p>Cargando tus reservas...</p>
+    </div>
+
+    <div *ngIf="!loading && reservas.length === 0" class="sin-reservas">
+        <mat-icon class="icon-grande">bookmark</mat-icon>
+        <p>No tienes reservas activas en este momento</p>
+        <button mat-raised-button color="primary" (click)="irAlCatalogo()" class="btn-volver">
+        <mat-icon>library_books</mat-icon>
+        Ir al Catálogo
+        </button>
+    </div>
+
+    <div *ngIf="!loading && reservas.length > 0" class="reservas-lista">
+        <mat-card *ngFor="let reserva of reservas" class="reserva-card">
+        <mat-card-header>
+            <mat-icon [color]="getEstadoColor(reserva.estado)" class="icon-estado">
+            {{ getEstadoIcono(reserva.estado) }}
+            </mat-icon>
+            <div class="header-info">
+            <h3 mat-card-title>{{ reserva.libro?.titulo }}</h3>
+            <p class="estado-label" [class]="'estado-' + reserva.estado">
+                {{ reserva.estado | uppercase }}
+            </p>
+            </div>
+        </mat-card-header>
+
+        <mat-card-content>
+            <div class="info-grid">
+            <div class="info-item">
+                <span class="label">Categoría</span>
+                <span class="valor">{{ reserva.libro?.categoria?.nombre || 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+                <span class="label">ISBN</span>
+                <span class="valor">{{ reserva.libro?.isbn || 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+                <span class="label">Fecha de Reserva</span>
+                <span class="valor">{{ formatearFecha(reserva.fecha_reserva) }}</span>
+            </div>
+            <div class="info-item">
+                <span class="label">Vencimiento</span>
+                <span class="valor" [class.alerta]="isVencida(reserva.fecha_vencimiento)">
+                {{ formatearFecha(reserva.fecha_vencimiento) }}
+                </span>
+            </div>
+            </div>
+
+            <div class="descripcion" *ngIf="reserva.libro?.descripcion">
+            <strong>Descripción:</strong>
+            <p>{{ reserva.libro?.descripcion }}</p>
+            </div>
+
+            <div class="autores" *ngIf="reserva.libro?.autores && reserva.libro?.autores?.length! > 0">
+            <strong>Autores:</strong>
+            <p *ngFor="let autor of reserva.libro?.autores || []">
+                ✍️ {{ autor.nombre }}
+            </p>
+            </div>
+        </mat-card-content>
+
+        <mat-card-actions>
+            <button
+            mat-raised-button
+            color="warn"
+            (click)="cancelarReserva(reserva)"
+            [disabled]="procesando && reservaProcesando === reserva.id"
+            *ngIf="reserva.estado === 'activa'"
+            class="btn-accion"
+            >
+            <mat-spinner *ngIf="procesando && reservaProcesando === reserva.id" diameter="20" class="spinner-mini"></mat-spinner>
+            <span *ngIf="!(procesando && reservaProcesando === reserva.id)">Cancelar</span>
+            </button>
+
+            <button
+            mat-raised-button
+            color="accent"
+            (click)="devolverLibro(reserva)"
+            [disabled]="procesando && reservaProcesando === reserva.id"
+            *ngIf="reserva.estado === 'activa'"
+            class="btn-accion"
+            >
+            <mat-spinner *ngIf="procesando && reservaProcesando === reserva.id" diameter="20" class="spinner-mini"></mat-spinner>
+            <span *ngIf="!(procesando && reservaProcesando === reserva.id)">Devolver</span>
+            </button>
+
+            <span *ngIf="reserva.estado !== 'activa'" class="estado-completado">
+            {{ reserva.estado === 'completada' ? '✓ Completada' : '✗ Cancelada' }}
+            </span>
+        </mat-card-actions>
+        </mat-card>
+    </div>
+</div>

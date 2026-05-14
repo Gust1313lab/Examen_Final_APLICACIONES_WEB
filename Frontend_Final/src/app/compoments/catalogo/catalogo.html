@@ -1,0 +1,79 @@
+<mat-toolbar color="primary" class="toolbar">
+    <span class="titulo">📚 Catálogo de Libros</span>
+    <span class="spacer"></span>
+    <button mat-button (click)="irAMisReservas()">
+        <mat-icon>bookmark</mat-icon>
+        Mis Reservas
+    </button>
+    <button mat-icon-button [matMenuTriggerFor]="menu">
+        <mat-icon>account_circle</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu">
+        <button mat-menu-item (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        <span>Cerrar Sesión</span>
+        </button>
+    </mat-menu>
+    </mat-toolbar>
+
+    <div class="catalogo-container">
+    <div *ngIf="loading" class="loading">
+        <mat-spinner></mat-spinner>
+        <p>Cargando libros disponibles...</p>
+    </div>
+
+    <div *ngIf="!loading && libros.length === 0" class="sin-libros">
+        <mat-icon class="icon-grande">auto_stories</mat-icon>
+        <p>No hay libros disponibles en este momento</p>
+    </div>
+
+    <div *ngIf="!loading && libros.length > 0" class="libros-grid">
+        <mat-card *ngFor="let libro of libros" class="libro-card">
+        <mat-card-header>
+            <mat-icon class="icon-libro">library_books</mat-icon>
+            <h2 mat-card-title>{{ libro.titulo }}</h2>
+        </mat-card-header>
+
+        <mat-card-content>
+            <p class="descripcion">{{ libro.descripcion }}</p>
+
+            <div class="info-libro">
+            <div class="info-item">
+                <mat-icon>calendar_today</mat-icon>
+                <span>{{ libro.anio_publicacion }}</span>
+            </div>
+            <div class="info-item">
+                <mat-icon>inventory_2</mat-icon>
+                <span>{{ libro.disponibles }} disponibles</span>
+            </div>
+            <div class="info-item" *ngIf="libro.categoria">
+                <mat-icon>label</mat-icon>
+                <span>{{ libro.categoria.nombre }}</span>
+            </div>
+            </div>
+
+            <div class="autores" *ngIf="libro.autores && libro.autores.length > 0">
+            <strong>Autores:</strong>
+            <p *ngFor="let autor of libro.autores">✍️ {{ autor.nombre }}</p>
+            </div>
+
+            <div class="isbn">
+            <strong>ISBN:</strong> {{ libro.isbn }}
+            </div>
+        </mat-card-content>
+
+        <mat-card-actions>
+            <button
+            mat-raised-button
+            color="accent"
+            (click)="reservarLibro(libro)"
+            [disabled]="reservando && libroReservando === libro.id"
+            class="btn-reservar"
+            >
+            <mat-spinner *ngIf="reservando && libroReservando === libro.id" diameter="20" class="spinner-mini"></mat-spinner>
+            <span *ngIf="!(reservando && libroReservando === libro.id)">Reservar</span>
+            </button>
+        </mat-card-actions>
+        </mat-card>
+    </div>
+</div>
