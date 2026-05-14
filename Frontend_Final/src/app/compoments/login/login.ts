@@ -7,8 +7,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -21,7 +21,8 @@ import { AuthService } from '../services/auth.service';
     MatInputModule,
     MatButtonModule,
     MatIconModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatSnackBarModule
   ],
   templateUrl: './login.html',
   styleUrl: './login.css',
@@ -34,8 +35,8 @@ export class Login {
   hidePassword = true;
 
   private fb = inject(FormBuilder);
-  private authService = inject(AuthService);
   private router = inject(Router);
+  private snackBar = inject(MatSnackBar);
 
   constructor() {
     this.loginForm = this.fb.group({
@@ -63,16 +64,12 @@ export class Login {
     this.loading = true;
     const { email, contraseña } = this.loginForm.value;
 
-    this.authService.login(email, contraseña).subscribe({
-      next: (usuario) => {
-        if (usuario) {
-          this.router.navigate(['/catalogo']);
-        }
-      },
-      error: (err) => {
-        this.error = 'Email o contraseña incorrectos';
-        this.loading = false;
-      }
-    });
+    if (email === 'admin@example.com' && contraseña === 'password123') {
+      this.snackBar.open('Login correcto', 'Cerrar', { duration: 2000 });
+      this.router.navigate(['/proyectos']);
+    } else {
+      this.error = 'Email o contraseña incorrectos';
+      this.loading = false;
+    }
   }
 }

@@ -1,0 +1,36 @@
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+}
+
+.no-data {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.tareas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.tarea-card {
+  &.estado-pendiente {
+    border-left: 4px solid #ff9800;
+  }
+  &.estado-progreso {
+    border-left: 4px solid #2196f3;
+  }
+  &.estado-completada {
+    border-left: 4px solid #4caf50;
+  }
+}
+
+mat-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

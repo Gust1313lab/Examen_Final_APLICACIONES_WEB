@@ -1,0 +1,56 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Crear Tarea</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form [formGroup]="tareaForm" (ngSubmit)="onSubmit()">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Título</mat-label>
+        <input matInput formControlName="titulo" required>
+        <mat-error *ngIf="tareaForm.get('titulo')?.hasError('required')">
+          El título es requerido
+        </mat-error>
+        <mat-error *ngIf="tareaForm.get('titulo')?.hasError('minlength')">
+          El título debe tener al menos 3 caracteres
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Descripción</mat-label>
+        <textarea matInput formControlName="descripcion"></textarea>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Estado</mat-label>
+        <mat-select formControlName="estado" required>
+          <mat-option *ngFor="let estado of estados" [value]="estado">
+            {{ estado }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Proyecto</mat-label>
+        <mat-select formControlName="id_proyecto" required>
+          <mat-option *ngFor="let proyecto of proyectos" [value]="proyecto.id">
+            {{ proyecto.nombre }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="tareaForm.get('id_proyecto')?.hasError('required')">
+          El proyecto es requerido
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Fecha de vencimiento</mat-label>
+        <input matInput [matDatepicker]="picker" formControlName="fecha_vencimiento">
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field>
+
+      <button mat-raised-button color="primary" class="full-width" [disabled]="tareaForm.invalid || loading">
+        {{ loading ? 'Creando...' : 'Crear Tarea' }}
+      </button>
+    </form>
+  </mat-card-content>
+</mat-card>

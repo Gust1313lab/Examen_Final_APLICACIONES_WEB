@@ -4,8 +4,8 @@ import { registerRoutes } from './index';
 export const app = express();
 const corsOptions = {
     origin: 'http://localhost:4200',
-    Credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
 };
 app.use(cors(corsOptions));

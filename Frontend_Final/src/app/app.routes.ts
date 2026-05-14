@@ -1,7 +1,9 @@
 import { Routes } from '@angular/router';
 import { Login } from './compoments/login/login';
-import { CatalogoComponent } from './compoments/catalogo/catalogo';
-import { MisReservasComponent } from './compoments/mis-reservas/mis-reservas';
+import { ProyectoCreateComponent } from './components/proyecto/proyecto-create.component';
+import { ProyectoListComponent } from './components/proyecto/proyecto-list.component';
+import { TareaCreateComponent } from './components/tarea/tarea-create.component';
+import { TareaListComponent } from './components/tarea-list/tarea-list.component';
 
 export const routes: Routes = [
   {
@@ -14,16 +16,19 @@ export const routes: Routes = [
     component: Login
   },
   {
-    path: 'catalogo',
-    component: CatalogoComponent
+    path: 'proyectos',
+    component: ProyectoListComponent
   },
   {
-    path: 'mis-reservas',
-    component: MisReservasComponent
+    path: 'proyectos/crear',
+    component: ProyectoCreateComponent
   },
   {
-    path: 'home',
-    redirectTo: 'catalogo',
-    pathMatch: 'full'
+    path: 'tareas',
+    component: TareaListComponent
+  },
+  {
+    path: 'tareas/crear',
+    component: TareaCreateComponent
   }
 ];

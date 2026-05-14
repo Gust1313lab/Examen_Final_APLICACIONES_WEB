@@ -1,0 +1,14 @@
+.full-width {
+  width: 100%;
+}
+
+mat-card {
+  max-width: 500px;
+  margin: 20px auto;
+}
+
+mat-card-content form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}

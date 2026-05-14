@@ -1,59 +1,122 @@
-# FrontendFinal
+# Frontend Final - Angular Task Management
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.2.
+## Overview
 
-## Development server
+This Angular application implements a task management system with CRUD operations for projects and tasks, using Angular Material for UI components and Reactive Forms for form handling.
 
-To start a local development server, run:
+## Features
 
-```bash
-ng serve
+### Authentication
+- Login page with reactive form validation
+- Hardcoded credentials for testing: `admin@example.com` / `password123`
+- Material Design UI components
+
+### Project Management
+- Create projects with name, description, and deadline
+- Reactive form validation
+- API integration via `ProyectoService`
+
+### Task Management
+- Create tasks with title, description, status, project association, and due date
+- View tasks with filtering by status (pendiente, en_progreso, completada)
+- Change task status with cycle button (pending → in progress → completed → pending)
+- Visual status indicators with color coding
+
+## Project Structure
+
+```
+src/app/
+├── compoments/
+│   └── login/
+│       └── login.ts               # Login with hardcoded credentials
+├── interfaces/
+│   ├── proyecto.interface.ts  # ProyectoDTO, ProyectosResponse
+│   └── tarea.interface.ts     # TareaDTO, TareasResponse, EstadoTarea
+├── services/
+│   ├── proyecto.service.ts        # CRUD operations for proyectos API
+│   └── tarea.service.ts           # CRUD operations for tareas API
+├── components/
+│   ├── proyecto/
+│   │   ├── proyecto-create.component.ts
+│   │   ├── proyecto-create.component.html
+│   │   ├── proyecto-create.component.css
+│   │   ├── proyecto-list.component.ts
+│   │   ├── proyecto-list.component.html
+│   │   └── proyecto-list.component.css
+│   ├── tarea/
+│   │   ├── tarea-create.component.ts
+│   │   ├── tarea-create.component.html
+│   │   └── tarea-create.component.css
+│   └── tarea-list/
+│       ├── tarea-list.component.ts
+│       ├── tarea-list.component.html
+│       └── tarea-list.component.css
+└── app.routes.ts                  # Route definitions
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Interfaces (DTOs)
 
-## Code scaffolding
+### ProyectoDTO
+```typescript
+interface ProyectoDTO {
+  id?: number;
+  nombre: string;
+  descripcion?: string | null;
+  fecha_limite?: Date | null;
+}
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+interface ProyectosResponse {
+  proyectos: ProyectoDTO[];
+}
 
-```bash
-ng generate component component-name
+interface ProyectoPorIdResponse extends ProyectoDTO {}
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+### TareaDTO
+```typescript
+enum EstadoTarea {
+  PENDIENTE = 'pendiente';
+  EN_PROGRESO = 'en_progreso';
+  COMPLETADA = 'completada';
+}
 
-```bash
-ng generate --help
+interface TareaDTO {
+  id?: number;
+  titulo: string;
+  descripcion?: string | null;
+  estado: EstadoTarea;
+  id_proyecto: number;
+  fecha_vencimiento?: Date | null;
+}
+
+interface TareasResponse {
+  tareas: TareaDTO[];
+}
+
+interface TareaPorIdResponse extends TareaDTO {}
 ```
 
-## Building
+## Services
 
-To build the project run:
+Both services use `HttpClient` with RxJS Observables for API communication:
 
-```bash
-ng build
-```
+- `ProyectoService`: `getProyectos()`, `getProyecto(id)`, `crearProyecto()`, `actualizarProyecto()`, `eliminarProyecto()`
+- `TareaService`: `getTareas()`, `getTareasPorEstado()`, `getTareasPorProyecto()`, `crearTarea()`, `cambiarEstado()`, `eliminarTarea()`
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## Routes
 
-## Running unit tests
+| Path | Component |
+|------|-----------|
+| `/login` | Login |
+| `/proyectos` | ProyectoListComponent |
+| `/proyectos/crear` | ProyectoCreateComponent |
+| `/tareas` | TareaListComponent |
+| `/tareas/crear` | TareaCreateComponent |
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+## API Configuration
 
-```bash
-ng test
-```
+Base URL: `http://localhost:3000/api` (configured in `environment.ts`)
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Expected endpoints:
+- `GET/POST/PUT/DELETE /api/proyectos`
+- `GET/POST/PUT/DELETE/PATCH /api/tareas`

@@ -1,0 +1,31 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Proyectos</mat-card-title>
+    <button mat-raised-button color="primary" routerLink="/proyectos/crear">
+      <mat-icon>add</mat-icon> Nuevo Proyecto
+    </button>
+  </mat-card-header>
+  <mat-card-content>
+    <div *ngIf="loading" class="loading-container">
+      <mat-spinner></mat-spinner>
+    </div>
+
+    <div *ngIf="!loading && proyectos.length === 0" class="no-data">
+      No hay proyectos para mostrar
+    </div>
+
+    <div class="proyectos-grid">
+      <mat-card *ngFor="let proyecto of proyectos" class="proyecto-card">
+        <mat-card-header>
+          <mat-card-title>{{ proyecto.nombre }}</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p>{{ proyecto.descripcion }}</p>
+          <p *ngIf="proyecto.fecha_limite">
+            <strong>Fecha límite:</strong> {{ proyecto.fecha_limite | date }}
+          </p>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </mat-card-content>
+</mat-card>
