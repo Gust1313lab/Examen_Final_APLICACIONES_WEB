@@ -1,7 +1,18 @@
 .loading-container {
   display: flex;
   justify-content: center;
+  align-items: center;
   padding: 40px;
+}
+
+.error-container {
+  text-align: center;
+  padding: 40px;
+}
+
+.error-container p {
+  margin-bottom: 16px;
+  color: #f44336;
 }
 
 .no-data {

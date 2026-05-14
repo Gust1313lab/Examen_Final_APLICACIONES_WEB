@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -34,11 +34,14 @@ export class TareaListComponent implements OnInit {
   tareas: TareaDTO[] = [];
   tareasFiltradas: TareaDTO[] = [];
   loading = false;
+  error = false;
   filtroEstado: EstadoTarea | 'todas' = 'todas';
   estados = EstadoTarea;
+  loadingDelete: number | null = null;
 
   private tareaService = inject(TareaService);
   private snackBar = inject(MatSnackBar);
+  private cdr = inject(ChangeDetectorRef);
 
   ngOnInit(): void {
     this.cargarTareas();
@@ -46,6 +49,7 @@ export class TareaListComponent implements OnInit {
 
   cargarTareas(): void {
     this.loading = true;
+    this.error = false;
     this.tareaService.getTareas().subscribe({
       next: (tareas) => {
         this.tareas = tareas;
@@ -53,10 +57,33 @@ export class TareaListComponent implements OnInit {
         this.loading = false;
       },
       error: () => {
-        this.snackBar.open('Error al cargar las tareas', 'Cerrar', { duration: 3000 });
+        this.error = true;
         this.loading = false;
       }
     });
+  }
+
+  recargar(): void {
+    this.cargarTareas();
+  }
+
+  eliminarTarea(tarea: TareaDTO): void {
+    if (confirm('¿Estás seguro de eliminar esta tarea?')) {
+      this.loadingDelete = tarea.id!;
+      this.tareaService.eliminarTarea(tarea.id!).subscribe({
+        next: () => {
+          this.tareas = this.tareas.filter(t => t.id !== tarea.id);
+          this.filtrarTareas();
+          this.cdr.markForCheck();
+          this.snackBar.open('Tarea eliminada', 'Cerrar', { duration: 2000 });
+          this.loadingDelete = null;
+        },
+        error: () => {
+          this.snackBar.open('Error al eliminar la tarea', 'Cerrar', { duration: 3000 });
+          this.loadingDelete = null;
+        }
+      });
+    }
   }
 
   filtrarTareas(): void {
@@ -72,12 +99,19 @@ export class TareaListComponent implements OnInit {
     const currentIndex = nuevosEstados.indexOf(tarea.estado);
     const siguienteEstado = nuevosEstados[(currentIndex + 1) % nuevosEstados.length];
 
-    this.tareaService.cambiarEstado(tarea.id!, siguienteEstado).subscribe({
-      next: () => {
-        tarea.estado = siguienteEstado;
+    const tareaId = tarea.id!;
+    this.tareaService.cambiarEstado(tareaId, siguienteEstado).subscribe({
+      next: (tareaActualizada) => {
+        const index = this.tareas.findIndex(t => t.id === tareaId);
+        if (index !== -1) {
+          this.tareas[index] = { ...this.tareas[index], estado: tareaActualizada.estado };
+        }
+        this.filtrarTareas();
+        this.cdr.markForCheck();
         this.snackBar.open('Estado actualizado', 'Cerrar', { duration: 2000 });
       },
-      error: () => {
+      error: (err) => {
+        console.error('Error al cambiar estado:', err);
         this.snackBar.open('Error al actualizar el estado', 'Cerrar', { duration: 3000 });
       }
     });

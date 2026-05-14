@@ -16,7 +16,7 @@
       </mat-select>
     </mat-form-field>
 
-    <ng-container *ngIf="!loading; else loadingTpl">
+    <ng-container *ngIf="!loading && !error; else loadingOrErrorTpl">
       <div *ngIf="tareasFiltradas.length === 0" class="no-data">
         No hay tareas para mostrar
       </div>
@@ -26,6 +26,9 @@
           <mat-card-header>
             <mat-card-title>{{ tarea.titulo }}</mat-card-title>
             <mat-card-subtitle>Proyecto ID: {{ tarea.id_proyecto }}</mat-card-subtitle>
+            <button mat-icon-button color="warn" (click)="eliminarTarea(tarea)" [disabled]="loadingDelete === tarea.id">
+              <mat-icon>delete</mat-icon>
+            </button>
           </mat-card-header>
           <mat-card-content>
             <p>{{ tarea.descripcion }}</p>
@@ -43,9 +46,13 @@
       </div>
     </ng-container>
 
-    <ng-template #loadingTpl>
+    <ng-template #loadingOrErrorTpl>
       <div class="loading-container">
-        <mat-spinner></mat-spinner>
+        <mat-spinner *ngIf="loading"></mat-spinner>
+        <div *ngIf="error" class="error-container">
+          <p>Error al cargar las tareas</p>
+          <button mat-raised-button color="primary" (click)="recargar()">Reintentar</button>
+        </div>
       </div>
     </ng-template>
   </mat-card-content>

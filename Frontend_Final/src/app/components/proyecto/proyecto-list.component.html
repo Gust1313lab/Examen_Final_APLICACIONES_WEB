@@ -6,26 +6,37 @@
     </button>
   </mat-card-header>
   <mat-card-content>
-    <div *ngIf="loading" class="loading-container">
-      <mat-spinner></mat-spinner>
-    </div>
+    <ng-container *ngIf="!loading && !error; else loadingOrErrorTpl">
+      <div *ngIf="proyectos.length === 0" class="no-data">
+        No hay proyectos para mostrar
+      </div>
 
-    <div *ngIf="!loading && proyectos.length === 0" class="no-data">
-      No hay proyectos para mostrar
-    </div>
+      <div *ngIf="proyectos.length > 0" class="proyectos-grid">
+        <mat-card *ngFor="let proyecto of proyectos" class="proyecto-card">
+          <mat-card-header>
+            <mat-card-title>{{ proyecto.nombre }}</mat-card-title>
+            <button mat-icon-button color="warn" (click)="eliminarProyecto(proyecto.id!)" [disabled]="loadingDelete === proyecto.id">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </mat-card-header>
+          <mat-card-content>
+            <p>{{ proyecto.descripcion }}</p>
+            <p *ngIf="proyecto.fecha_limite">
+              <strong>Fecha límite:</strong> {{ proyecto.fecha_limite | date }}
+            </p>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </ng-container>
 
-    <div class="proyectos-grid">
-      <mat-card *ngFor="let proyecto of proyectos" class="proyecto-card">
-        <mat-card-header>
-          <mat-card-title>{{ proyecto.nombre }}</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <p>{{ proyecto.descripcion }}</p>
-          <p *ngIf="proyecto.fecha_limite">
-            <strong>Fecha límite:</strong> {{ proyecto.fecha_limite | date }}
-          </p>
-        </mat-card-content>
-      </mat-card>
-    </div>
+    <ng-template #loadingOrErrorTpl>
+      <div class="loading-container">
+        <mat-spinner *ngIf="loading"></mat-spinner>
+        <div *ngIf="error" class="error-container">
+          <p>Error al cargar los proyectos</p>
+          <button mat-raised-button color="primary" (click)="recargar()">Reintentar</button>
+        </div>
+      </div>
+    </ng-template>
   </mat-card-content>
 </mat-card>
