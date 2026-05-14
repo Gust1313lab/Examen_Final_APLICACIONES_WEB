@@ -12,10 +12,11 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { forkJoin, Subject, takeUntil } from 'rxjs';
-import { LibroDTO, ReservaDTO } from '../interfaces';
+import { CategoriaDTO, LibroDTO, ReservaDTO } from '../interfaces';
 import { ReservaService } from '../services/reserva.service';
 import { AuthService } from '../services/auth.service';
 import { LibroService } from '../services/libro.service';
+import { CategoriaService } from '../services/categoria.service';
 
 @Component({
   selector: 'app-mis-reservas',
@@ -48,6 +49,7 @@ export class MisReservasComponent implements OnInit, OnDestroy {
 
   private reservaService = inject(ReservaService);
   private libroService = inject(LibroService);
+  private categoriaService = inject(CategoriaService);
   private authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
   private router = inject(Router);
@@ -83,12 +85,17 @@ export class MisReservasComponent implements OnInit, OnDestroy {
     this.loading = true;
     forkJoin({
       reservas: this.reservaService.getReservasPorUsuario(usuario.id!),
-      libros: this.libroService.getAllLibros()
+      libros: this.libroService.getAllLibros(),
+      categorias: this.categoriaService.getAllCategorias()
     }).pipe(
       takeUntil(this.destroy$)
     ).subscribe({
-      next: ({ reservas, libros }) => {
-        this.reservas = this.completarReservasConLibros(reservas || [], libros || []);
+      next: ({ reservas, libros, categorias }) => {
+        this.reservas = this.completarReservasConLibros(
+          reservas || [],
+          libros || [],
+          categorias || []
+        );
         this.reservasOriginales = [...this.reservas];
         this.loading = false;
         this.cdr.markForCheck();
@@ -103,17 +110,48 @@ export class MisReservasComponent implements OnInit, OnDestroy {
     });
   }
 
-  private completarReservasConLibros(reservas: ReservaDTO[], libros: LibroDTO[]): ReservaDTO[] {
+  private completarReservasConLibros(
+    reservas: ReservaDTO[],
+    libros: LibroDTO[],
+    categorias: CategoriaDTO[]
+  ): ReservaDTO[] {
     const librosPorId = new Map<number, LibroDTO>(
       libros
         .filter((libro): libro is LibroDTO & { id: number } => libro.id !== undefined)
         .map(libro => [libro.id, libro])
     );
 
+    const categoriasPorId = new Map<number, CategoriaDTO>(
+      categorias
+        .filter((categoria): categoria is CategoriaDTO & { id: number } => categoria.id !== undefined)
+        .map(categoria => [categoria.id, categoria])
+    );
+
     return reservas.map(reserva => ({
       ...reserva,
-      libro: reserva.libro ?? (reserva.id_libro ? librosPorId.get(reserva.id_libro) : undefined)
+      libro: this.completarLibroConCategoria(
+        reserva.libro ?? (reserva.id_libro ? librosPorId.get(reserva.id_libro) : undefined),
+        categoriasPorId
+      )
     }));
+  }
+
+  private completarLibroConCategoria(
+    libro: LibroDTO | undefined,
+    categoriasPorId: Map<number, CategoriaDTO>
+  ): LibroDTO | undefined {
+    if (!libro) {
+      return undefined;
+    }
+
+    if (libro.categoria) {
+      return libro;
+    }
+
+    return {
+      ...libro,
+      categoria: categoriasPorId.get(libro.id_categoria)
+    };
   }
 
   cancelarReserva(reserva: ReservaDTO): void {
