@@ -61,7 +61,7 @@ export class CatalogoComponent implements OnInit, OnDestroy {
 
   cargarLibrosDisponibles(): void {
     this.loading = true;
-    this.libroService.getLibrosDisponibles().pipe(
+    this.libroService.getAllLibros().pipe(
       takeUntil(this.destroy$)
     ).subscribe({
       next: (libros) => {

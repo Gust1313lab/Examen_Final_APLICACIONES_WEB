@@ -11,10 +11,11 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
-import { ReservaDTO } from '../interfaces';
+import { forkJoin, Subject, takeUntil } from 'rxjs';
+import { LibroDTO, ReservaDTO } from '../interfaces';
 import { ReservaService } from '../services/reserva.service';
 import { AuthService } from '../services/auth.service';
+import { LibroService } from '../services/libro.service';
 
 @Component({
   selector: 'app-mis-reservas',
@@ -46,6 +47,7 @@ export class MisReservasComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = ['libro', 'estado', 'fechaReserva', 'fechaVencimiento', 'acciones'];
 
   private reservaService = inject(ReservaService);
+  private libroService = inject(LibroService);
   private authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
   private router = inject(Router);
@@ -79,11 +81,14 @@ export class MisReservasComponent implements OnInit, OnDestroy {
     }
 
     this.loading = true;
-    this.reservaService.getReservasPorUsuario(usuario.id!).pipe(
+    forkJoin({
+      reservas: this.reservaService.getReservasPorUsuario(usuario.id!),
+      libros: this.libroService.getAllLibros()
+    }).pipe(
       takeUntil(this.destroy$)
     ).subscribe({
-      next: (reservas) => {
-        this.reservas = reservas || [];
+      next: ({ reservas, libros }) => {
+        this.reservas = this.completarReservasConLibros(reservas || [], libros || []);
         this.reservasOriginales = [...this.reservas];
         this.loading = false;
         this.cdr.markForCheck();
@@ -96,6 +101,19 @@ export class MisReservasComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       }
     });
+  }
+
+  private completarReservasConLibros(reservas: ReservaDTO[], libros: LibroDTO[]): ReservaDTO[] {
+    const librosPorId = new Map<number, LibroDTO>(
+      libros
+        .filter((libro): libro is LibroDTO & { id: number } => libro.id !== undefined)
+        .map(libro => [libro.id, libro])
+    );
+
+    return reservas.map(reserva => ({
+      ...reserva,
+      libro: reserva.libro ?? (reserva.id_libro ? librosPorId.get(reserva.id_libro) : undefined)
+    }));
   }
 
   cancelarReserva(reserva: ReservaDTO): void {

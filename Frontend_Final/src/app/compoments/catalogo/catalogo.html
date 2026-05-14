@@ -67,11 +67,13 @@
             mat-raised-button
             color="accent"
             (click)="reservarLibro(libro)"
-            [disabled]="reservando && libroReservando === libro.id"
+            [disabled]="(reservando && libroReservando === libro.id) || libro.disponibles === 0"
             class="btn-reservar"
             >
             <mat-spinner *ngIf="reservando && libroReservando === libro.id" diameter="20" class="spinner-mini"></mat-spinner>
-            <span *ngIf="!(reservando && libroReservando === libro.id)">Reservar</span>
+            <span *ngIf="!(reservando && libroReservando === libro.id)">
+                {{ libro.disponibles === 0 ? 'Sin stock' : 'Reservar' }}
+            </span>
             </button>
         </mat-card-actions>
         </mat-card>
